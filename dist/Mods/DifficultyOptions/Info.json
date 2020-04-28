@@ -1,6 +1,0 @@
-{
-    "Id": "DifficultyOptions",
-    "Version": "0.0.1",
-    "EntryMethod": "DifficultyOptions.Main.Load",
-    "Repository":"https://github.com/blakespangenberg/liads-difficulty-options"
-}
