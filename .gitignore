@@ -64,5 +64,5 @@ crashlytics-build.properties
 dist/UnityModManager/Log.txt
 
 # Additional
-oc2-mod/oc2-mod/bin/*
-oc2-mod/oc2-mod/Obj/*
+OC2MOd/bin/*
+OC2MOd/Obj/*
