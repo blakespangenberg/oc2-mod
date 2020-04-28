@@ -24,12 +24,27 @@ namespace OC2Mod
 {
     public class Main
     {
+        static UnityModManager.ModEntry mod;
+        static bool is_pressed = false;
         static bool Load(UnityModManager.ModEntry modEntry)
         {
-            // var harmony = HarmonyInstance.Create(modEntry.Info.Id);
-            // harmony.PatchAll(Assembly.GetExecutingAssembly());
+            try
+            {
+                mod = modEntry;
+                is_pressed = false;
 
-            modEntry.OnUpdate = OnUpdate;
+                var harmony = HarmonyInstance.Create(mod.Info.Id);
+                harmony.PatchAll(Assembly.GetExecutingAssembly());
+
+                mod.OnUpdate = OnUpdate;
+            }
+            catch (Exception e)
+            {
+                mod.Logger.Log("Load Exception:");
+                mod.Logger.Log(e.ToString());
+                return false;
+            }
+
             return true;
         }
 
@@ -37,23 +52,15 @@ namespace OC2Mod
         {
             if(Input.GetKeyDown(KeyCode.F1))
             {
-                modEntry.Logger.Log("F1 pressed");
+                mod.Logger.Log("F1 pressed");
+                is_pressed = true;
             }
-        }
 
-        /*
-        [HarmonyPatch(typeof(SurfaceMovable))] // Class
-        [HarmonyPatch("GetVelocity")]          // Method
-        static class DoubleSpeed
-        {
-            static bool Prefix(Vector3 __result)
+            if(Input.GetKeyUp(KeyCode.F1))
             {
-                __result = new Vector3();
-                __result.Set(10,10,10);
-
-                return false;
+                mod.Logger.Log("F1 released");
+                is_pressed = false;
             }
         }
-        */
     }
 }
