@@ -1,0 +1,6 @@
+{
+    "Id": "OC2Mod",
+    "Version": "0.0.1",
+    "EntryMethod": "OC2Mod.Main.Load",
+    "Repository":"https://github.com/blakespangenberg/oc2-mod"
+}

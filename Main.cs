@@ -11,9 +11,9 @@ namespace OC2Mod
 {
     public class Main
     {
-        static bool Load(UnityModManager.ModEntry modEntry)
+        static void Load()
         {
-            return true;
+            // initialization here //
         }
 
         /*
