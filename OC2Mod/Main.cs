@@ -62,5 +62,22 @@ namespace OC2Mod
                 is_pressed = false;
             }
         }
+
+        [HarmonyPatch(typeof(ServerWashingStation))] // Class
+        [HarmonyPatch("UpdateSynchronising")]        // Method
+        static class SkipFailedDelivery
+        {
+            static bool Prefix(ref WashingStation ___m_washingStation)
+            {
+                if(is_pressed)
+                {
+                    //mod.Logger.Log("instant dishes");
+                    ___m_washingStation.m_cleanPlateTime = 0.1f;
+                }
+
+                //mod.Logger.Log("non-instant dishes");
+                return true; // execute original
+            }
+        }
     }
 }
