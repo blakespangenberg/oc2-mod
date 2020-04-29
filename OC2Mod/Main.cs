@@ -25,15 +25,14 @@ namespace OC2Mod
     public class Main
     {
         static UnityModManager.ModEntry mod;
-        static bool is_f1_pressed = false;
-        const double HORDE_SPEED_MULTIPLIER = 1.0f;
+        const float HORDE_SPEED_MULTIPLIER    = 1.0f;
+        const float DISH_WASH_TIME_MULTIPLIER = 1.0f;
 
         static bool Load(UnityModManager.ModEntry modEntry)
         {
             try
             {
                 mod = modEntry;
-                is_f1_pressed = false;
 
                 var harmony = HarmonyInstance.Create(mod.Info.Id);
                 harmony.PatchAll(Assembly.GetExecutingAssembly());
@@ -55,18 +54,18 @@ namespace OC2Mod
             if(Input.GetKeyDown(KeyCode.F1))
             {
                 //mod.Logger.Log("F1 pressed");
-                is_f1_pressed = true;
+                
             }
 
             if(Input.GetKeyUp(KeyCode.F1))
             {
                 //mod.Logger.Log("F1 released");
-                is_f1_pressed = false;
+                
             }
         }
 
         /*
-         * When F1 is held, dish wash time is reduced to 0.1s
+         * Speeds up/Slows down dish wash speed
          */
         [HarmonyPatch(typeof(ServerWashingStation))] // Class
         [HarmonyPatch("UpdateSynchronising")]        // Method
@@ -74,19 +73,13 @@ namespace OC2Mod
         {
             static bool Prefix(ref WashingStation ___m_washingStation)
             {
-                if(is_f1_pressed)
-                {
-                    //mod.Logger.Log("instant dishes");
-                    ___m_washingStation.m_cleanPlateTime = 0.1f;
-                }
-
-                //mod.Logger.Log("non-instant dishes");
+                ___m_washingStation.m_cleanPlateTime = 2.0f * DISH_WASH_TIME_MULTIPLIER;
                 return true; // execute original
             }
         }
 
         /*
-         * Speeds up hoard spawning schedule by 200%
+         * Increases/Decreases staggering of horde spawn in each wave
          */
         [HarmonyPatch(typeof(GameModes.Horde.ServerHordeFlowController))] // Class
         [HarmonyPatch("NextSpawn")]                                       // Method
