@@ -25,13 +25,15 @@ namespace OC2Mod
     public class Main
     {
         static UnityModManager.ModEntry mod;
-        static bool is_pressed = false;
+        static bool is_f1_pressed = false;
+        const double HORDE_SPEED_MULTIPLIER = 1.0f;
+
         static bool Load(UnityModManager.ModEntry modEntry)
         {
             try
             {
                 mod = modEntry;
-                is_pressed = false;
+                is_f1_pressed = false;
 
                 var harmony = HarmonyInstance.Create(mod.Info.Id);
                 harmony.PatchAll(Assembly.GetExecutingAssembly());
@@ -52,24 +54,27 @@ namespace OC2Mod
         {
             if(Input.GetKeyDown(KeyCode.F1))
             {
-                mod.Logger.Log("F1 pressed");
-                is_pressed = true;
+                //mod.Logger.Log("F1 pressed");
+                is_f1_pressed = true;
             }
 
             if(Input.GetKeyUp(KeyCode.F1))
             {
-                mod.Logger.Log("F1 released");
-                is_pressed = false;
+                //mod.Logger.Log("F1 released");
+                is_f1_pressed = false;
             }
         }
 
+        /*
+         * When F1 is held, dish wash time is reduced to 0.1s
+         */
         [HarmonyPatch(typeof(ServerWashingStation))] // Class
         [HarmonyPatch("UpdateSynchronising")]        // Method
-        static class SkipFailedDelivery
+        static class FastWash
         {
             static bool Prefix(ref WashingStation ___m_washingStation)
             {
-                if(is_pressed)
+                if(is_f1_pressed)
                 {
                     //mod.Logger.Log("instant dishes");
                     ___m_washingStation.m_cleanPlateTime = 0.1f;
@@ -77,6 +82,31 @@ namespace OC2Mod
 
                 //mod.Logger.Log("non-instant dishes");
                 return true; // execute original
+            }
+        }
+
+        /*
+         * Speeds up hoard spawning schedule by 200%
+         */
+        [HarmonyPatch(typeof(GameModes.Horde.ServerHordeFlowController))] // Class
+        [HarmonyPatch("NextSpawn")]                                       // Method
+        static class FastHorde
+        {
+            static void Postfix(List<GameModes.Horde.HordeSpawnData> spawns, double waveTime, ref int __result)
+            {
+                mod.Logger.Log("FastHorde.PostFix()");
+
+                double waveTimeScaled = waveTime*HORDE_SPEED_MULTIPLIER;
+                for (int i = 0; i < spawns.Count; i++)
+                {
+                    if (spawns[i].CanSpawn(waveTimeScaled))
+                    {
+                        __result = i;
+                        return;
+                    }
+                }
+
+                __result = -1;
             }
         }
     }
