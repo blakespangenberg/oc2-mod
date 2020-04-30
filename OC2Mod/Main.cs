@@ -7,6 +7,7 @@ using System.Text;
 using UnityEngine;
 using UnityModManagerNet;
 using Harmony;
+using System.Collections;
 
 /*
  * These are functions that the mod manager will call if implemented
@@ -25,7 +26,7 @@ namespace OC2Mod
     public class Main
     {
         static UnityModManager.ModEntry mod;
-        const float HORDE_SPEED_MULTIPLIER    = 1.0f;
+        const float HORDE_STAGGER_TIME_MULTIPLIER = 1.0f;
         const float DISH_WASH_TIME_MULTIPLIER = 1.0f;
 
         static bool Load(UnityModManager.ModEntry modEntry)
@@ -89,7 +90,7 @@ namespace OC2Mod
             {
                 mod.Logger.Log("FastHorde.PostFix()");
 
-                double waveTimeScaled = waveTime*HORDE_SPEED_MULTIPLIER;
+                double waveTimeScaled = waveTime* HORDE_STAGGER_TIME_MULTIPLIER;
                 for (int i = 0; i < spawns.Count; i++)
                 {
                     if (spawns[i].CanSpawn(waveTimeScaled))
@@ -100,6 +101,47 @@ namespace OC2Mod
                 }
 
                 __result = -1;
+            }
+        }
+
+        const float HORDE_PLATE_RETURN_TIME_MULTIPLIER       = 1.0f;
+        const float HORDE_TARGET_HEALTH_MULTIPLIER           = 1.0f;
+        const float HORDE_TARGET_REPAIR_TIME_MULTIPLIER      = 1.0f;
+        const float HORDE_TARGET_REPAIR_THRESHOLD_MULTIPLIER = 1.0f;
+        const float HORDE_TARGET_REPAIR_COST_MULTIPLIER      = 1.0f;
+        const float HORDE_HEALTH_MULTIPLIER                  = 1.0f;
+        
+        // const float HORDE_ENEMY_COUNT_MULTIPLIER = 1.0f;
+
+        [HarmonyPatch(typeof(GameUtils))]                             // Class
+        [HarmonyPatch("GetLevelConfig")]                              // MethodPostfix
+        static class GetLevelConfigPatch
+        {
+            static void Postfix(ref LevelConfigBase __result)
+            {
+                // mod.Logger.Log("GetLevelConfigPatch.Postfix()");
+                
+                GameModes.Horde.HordeLevelConfig result = (__result as GameModes.Horde.HordeLevelConfig);
+                if (result == null) return; // It's not a horde level
+
+                result.m_plateReturnTime        =        10f * HORDE_PLATE_RETURN_TIME_MULTIPLIER;
+                result.m_targetHealth           = (int) (100 * HORDE_TARGET_HEALTH_MULTIPLIER);
+                result.m_targetRepairSpeed      =       0.5f * HORDE_TARGET_REPAIR_TIME_MULTIPLIER;
+                result.m_targetRepairThreshold  = (int) (10f * HORDE_TARGET_REPAIR_THRESHOLD_MULTIPLIER);
+                result.m_targetRepairCostMax    = (int) (200 * HORDE_TARGET_REPAIR_COST_MULTIPLIER);
+                result.m_health                 = (int) (100 * HORDE_HEALTH_MULTIPLIER);
+
+                /*
+                // waves
+                for (int i = 0; i < result.m_waves.Count; i++)
+                {
+                    // spawns for each wave
+                    for(int j = 0; j < result.m_waves[i].m_spawns.Count * HORDE_ENEMY_COUNT_MULTIPLIER; j++)
+                    {
+                        result.m_waves[i].m_spawns.Add(result.m_waves[i].m_spawns[j % result.m_waves[i].m_spawns.Count]);
+                    }
+                }
+                */
             }
         }
     }
